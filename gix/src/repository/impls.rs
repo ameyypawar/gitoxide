@@ -111,7 +111,7 @@ impl gix_object::Write for crate::Repository {
         if self.objects.exists(&oid) {
             return Ok(oid);
         }
-        self.objects.write_buf(object, from)
+        self.objects.write_buf_with_known_id(oid, object, from)
     }
 
     fn write_stream(
