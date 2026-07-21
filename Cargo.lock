@@ -1748,6 +1748,7 @@ dependencies = [
  "serde",
  "serial_test",
  "smallvec",
+ "thiserror 2.0.18",
  "unicode-bom",
 ]
 
@@ -1924,13 +1925,13 @@ version = "0.21.2"
 dependencies = [
  "bstr",
  "crossbeam-channel",
+ "gix-error",
  "gix-features",
  "gix-path",
  "gix-utils",
  "is_ci",
  "serde",
  "tempfile",
- "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -2107,7 +2108,6 @@ dependencies = [
  "pretty_assertions",
  "serde",
  "termtree",
- "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -2180,7 +2180,6 @@ dependencies = [
  "pretty_assertions",
  "serde",
  "tempfile",
- "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -2210,7 +2209,6 @@ dependencies = [
  "parking_lot",
  "serde",
  "smallvec",
- "thiserror 2.0.18",
  "uluru",
 ]
 
@@ -2466,6 +2464,7 @@ dependencies = [
  "gix-refspec",
  "gix-testtools",
  "gix-url",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
