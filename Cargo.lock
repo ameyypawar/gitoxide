@@ -1736,7 +1736,6 @@ dependencies = [
  "document-features",
  "gix-config",
  "gix-config-value",
- "gix-error",
  "gix-features",
  "gix-glob",
  "gix-path",
