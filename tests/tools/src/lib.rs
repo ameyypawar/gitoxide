@@ -1165,8 +1165,7 @@ fn marker_if_needed(
                 None,
             )
         })
-        .transpose()
-        .map_err(gix_lock::acquire::Error::into_error)?)
+        .transpose()?)
 }
 
 fn force_and_dir(
