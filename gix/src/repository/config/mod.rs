@@ -102,8 +102,7 @@ impl crate::Repository {
                 .string_filter("ssh.variant", &mut trusted)
                 .and_then(|variant| Ssh::VARIANT.try_into_variant(variant).transpose())
                 .transpose()
-                .with_leniency(self.options.lenient_config)
-                .map_err(gix_error::Error::from_error)?,
+                .with_leniency(self.options.lenient_config)?,
         };
         Ok(opts)
     }
