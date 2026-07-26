@@ -58,8 +58,9 @@ pub mod collate {
         //                exercised at `gix/tests/gix/remote/fetch.rs:228` (`Error<std::io::Error>`)
         //                and `:245` (`Error::Other`). The `impl<E> crate::protocol::transport::
         //                IsSpuriousError for Error<E>` below would also become an orphan impl (that
-        //                trait is `gix_protocol`'s, re-exported as `crate::protocol`) on a foreign type
-        //                if forced into a non-generic alias — E0117. `is_corrupted()` below also
+        //                trait is `gix_transport`'s (`gix-transport/src/lib.rs:67`), merely re-exported
+        //                through `gix_protocol::transport` and then as `crate::protocol`) on a foreign
+        //                type if forced into a non-generic alias — E0117. `is_corrupted()` below also
         //                matches specific variants directly, e.g. `Open(open::Error::
         //                NotARepository { .. } | ...::Config(_))`.
         /// An error which combines all possible errors when opening a repository, finding remotes and using them to fetch.

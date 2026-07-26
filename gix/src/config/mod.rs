@@ -81,11 +81,9 @@ pub mod set_value {
 // TODO(review): kept concrete. Callers match its variants directly: `gix/tests/gix/repository/
 //                open.rs:358` (`PathInterpolation { .. }`), `:458` (`ObjectFormatRequiresV1`), `:477`
 //                (`UnsupportedRepositoryFormatVersion { version: 2 }`), and `gix/tests/gix/id.rs:47`
-//                (`CoreAbbrev(_)`). Separately, two parents already have an erased slot filled and
+//                (`CoreAbbrev(_)`). Separately, one parent already has an erased slot filled and
 //                would gain a second if this type were erased too: `clone::fetch::Error::ApplyConfig`
-//                (`gix/src/clone/fetch/mod.rs:28`, erased slot `ParseConfig` at `:26`) and
-//                `submodule::status::Error::IgnoreConfiguration` (`gix/src/submodule/mod.rs:421`,
-//                erased slot `StatusIter` at `:425`).
+//                (`gix/src/clone/fetch/mod.rs:28`, erased slot `ParseConfig` at `:26`).
 /// The error returned when failing to initialize the repository configuration.
 ///
 /// This configuration is on the critical path when opening a repository.

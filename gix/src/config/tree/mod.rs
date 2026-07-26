@@ -122,13 +122,13 @@ pub mod keys;
 pub mod key {
     ///
     pub mod validate {
-        // TODO(review): no structural blocker found. No `#[from]` parent embeds this type; it isn't
-        //                generic; it has no foreign-trait impl. Its sole field, `source`, is private, so
-        //                there is nothing for an external caller to destructure even if it matched
-        //                on `Error { .. }`, and no such match exists in `gix/tests`, `gitoxide-core`,
-        //                `src` or `examples`. Its two `#[from]` parents — `config::set_value::Error::
-        //                Validate` (`gix/src/config/mod.rs:65`) and `validate_assignment::Error::
-        //                Validate` below — have no other erased member either.
+        // TODO(review): no structural blocker found. Its two `#[from]` parents — `config::set_value::
+        //                Error::Validate` (`gix/src/config/mod.rs:73`) and `validate_assignment::Error::
+        //                Validate` below (`:152`) — do exist, but neither has another already-erased
+        //                member, so there's no E0119 collision here; it isn't generic; it has no
+        //                foreign-trait impl. Its sole field, `source`, is private, so there is nothing
+        //                for an external caller to destructure even if it matched on `Error { .. }`, and
+        //                no such match exists in `gix/tests`, `gitoxide-core`, `src` or `examples`.
         /// The error returned by [`Key::validate()`][crate::config::tree::Key::validate()].
         #[derive(Debug, thiserror::Error)]
         #[error(transparent)]
