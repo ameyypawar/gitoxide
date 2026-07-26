@@ -2,6 +2,13 @@
 pub mod edit {
     use crate::config;
 
+    // TODO(review): kept concrete due to an E0119 collision. `clone::fetch::Error`
+    //                (`gix/src/clone/fetch/mod.rs`) embeds this type via
+    //                `HeadUpdate(#[from] crate::reference::edit::Error)`, and already embeds the
+    //                erased `config::overrides::Error`, via `ParseConfig(#[from] ...)`. Erasing
+    //                `edit::Error` would give `clone::fetch::Error` two `From<gix_error::Error>`
+    //                impls. (`init::Error::EditHeadForDefaultBranch` at `gix/src/init.rs:39` has no
+    //                erased member, so it isn't a second blocker.)
     /// The error returned by [`edit_references(…)`][crate::Repository::edit_references()], and others
     /// which ultimately create a reference.
     #[derive(Debug, thiserror::Error)]
@@ -24,6 +31,11 @@ pub mod edit {
 
 ///
 pub mod peel {
+    // TODO(review): kept concrete. Matched at `gix/src/remote/connection/fetch/update_refs/mod.rs:212`
+    //                to detect unborn refs: `Error::ToId(gix_ref::peel::to_id::Error::
+    //                FollowToObject(gix_ref::peel::to_object::Error::Follow(_)))`. Its sole parent,
+    //                `head::peel::Error::PeelReference` (`gix/src/head/peel.rs:18`), has no erased
+    //                member.
     /// The error returned by [`Reference::peel_to_id()`](crate::Reference::peel_to_id()) and
     /// [`Reference::into_fully_peeled_id()`](crate::Reference::into_fully_peeled_id()).
     #[derive(Debug, thiserror::Error)]
@@ -81,6 +93,12 @@ pub mod find {
     pub mod existing {
         use gix_ref::PartialName;
 
+        // TODO(review): kept concrete. Callers match its `NotFound` variant directly:
+        //                `gix/src/repository/reference.rs:193` and
+        //                `gix/src/revision/spec/parse/delegate/revision.rs:210`. Separately,
+        //                `repository::index_or_load_from_head_or_empty::Error::ReadHead`
+        //                (`gix/src/repository/mod.rs:314`) already has an erased slot via
+        //                `PeelToTree` (`:318`), so this type is doubly blocked from erasure there.
         /// The error returned by [`find_reference(…)`][crate::Repository::find_reference()], and others.
         #[derive(Debug, thiserror::Error)]
         #[expect(missing_docs)]

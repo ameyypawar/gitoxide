@@ -122,6 +122,13 @@ pub mod keys;
 pub mod key {
     ///
     pub mod validate {
+        // TODO(review): no structural blocker found. No `#[from]` parent embeds this type; it isn't
+        //                generic; it has no foreign-trait impl. Its sole field, `source`, is private, so
+        //                there is nothing for an external caller to destructure even if it matched
+        //                on `Error { .. }`, and no such match exists in `gix/tests`, `gitoxide-core`,
+        //                `src` or `examples`. Its two `#[from]` parents — `config::set_value::Error::
+        //                Validate` (`gix/src/config/mod.rs:65`) and `validate_assignment::Error::
+        //                Validate` below — have no other erased member either.
         /// The error returned by [`Key::validate()`][crate::config::tree::Key::validate()].
         #[derive(Debug, thiserror::Error)]
         #[error(transparent)]
@@ -132,6 +139,11 @@ pub mod key {
     }
     ///
     pub mod validate_assignment {
+        // TODO(review): no structural blocker found. No `#[from]` parent embeds this type; it isn't
+        //                generic; it has no foreign-trait impl. Its `Name` variant is only ever
+        //                constructed, at `gix/src/config/tree/traits.rs:168` and `:194`, never matched
+        //                externally. Its `Validate` variant embeds `validate::Error` above, which is
+        //                also concrete and not erased, so this enum has no erased member of its own.
         /// The error returned by [`Key::validated_assignment`*()][crate::config::tree::Key::validated_assignment_fmt()].
         #[derive(Debug, thiserror::Error)]
         #[expect(missing_docs)]
