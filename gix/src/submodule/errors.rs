@@ -27,8 +27,8 @@ pub mod open {
     // TODO(review): kept concrete. Matched at `gix/tests/gix/submodule.rs:343-344` and `:800-801`:
     //                `Error::GitDir(git_dir_try_old_form::Error::InvalidGitDirFileTarget { .. })` /
     //                `::GitDir(..)`. Separately, `submodule::status::Error::OpenRepository`
-    //                (`gix/src/submodule/mod.rs:419`) already has an erased slot via `StatusIter`
-    //                (`:425`), so this type is doubly blocked from erasure there.
+    //                (`gix/src/submodule/mod.rs`) already has an erased slot via `StatusIter`, so
+    //                this type is doubly blocked from erasure there.
     /// The error returned by [Submodule::open()](crate::Submodule::open()).
     #[derive(Debug, thiserror::Error)]
     #[expect(missing_docs)]
@@ -73,8 +73,8 @@ pub mod git_dir_try_old_form {
 pub mod state {
     // TODO(review): kept concrete. Matched at `gix/tests/gix/submodule.rs:333`, `:411` and `:808`:
     //                `Error::GitDirTryOldForm(..)`. Separately, `submodule::status::Error::State`
-    //                (`gix/src/submodule/mod.rs:413`) already has an erased slot via `StatusIter`
-    //                (`:425`), so this type is doubly blocked from erasure there.
+    //                (`gix/src/submodule/mod.rs`) already has an erased slot via `StatusIter`, so
+    //                this type is doubly blocked from erasure there.
     /// The error returned by [Submodule::state()](crate::Submodule::state()).
     #[derive(Debug, thiserror::Error)]
     #[expect(missing_docs)]

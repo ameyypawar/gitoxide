@@ -123,8 +123,8 @@ pub mod key {
     ///
     pub mod validate {
         // TODO(review): no structural blocker found. Its two `#[from]` parents — `config::set_value::
-        //                Error::Validate` (`gix/src/config/mod.rs:73`) and `validate_assignment::Error::
-        //                Validate` below (`:152`) — do exist, but neither has another already-erased
+        //                Error::Validate` (`gix/src/config/mod.rs`) and `validate_assignment::Error::
+        //                Validate` below — do exist, but neither has another already-erased
         //                member, so there's no E0119 collision here; it isn't generic; it has no
         //                foreign-trait impl. Its sole field, `source`, is private, so there is nothing
         //                for an external caller to destructure even if it matched on `Error { .. }`, and
@@ -141,9 +141,11 @@ pub mod key {
     pub mod validate_assignment {
         // TODO(review): no structural blocker found. No `#[from]` parent embeds this type; it isn't
         //                generic; it has no foreign-trait impl. Its `Name` variant is only ever
-        //                constructed, at `gix/src/config/tree/traits.rs:168` and `:194`, never matched
-        //                externally. Its `Validate` variant embeds `validate::Error` above, which is
-        //                also concrete and not erased, so this enum has no erased member of its own.
+        //                constructed, in `Key::validated_assignment()` and
+        //                `Key::validated_assignment_with_subsection()` (`gix/src/config/tree/traits.rs`),
+        //                never matched externally. Its `Validate` variant embeds `validate::Error`
+        //                above, which is also concrete and not erased, so this enum has no erased
+        //                member of its own.
         /// The error returned by [`Key::validated_assignment`*()][crate::config::tree::Key::validated_assignment_fmt()].
         #[derive(Debug, thiserror::Error)]
         #[expect(missing_docs)]

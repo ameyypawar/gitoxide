@@ -409,7 +409,7 @@ pub mod status {
     //                `Error::State(state::Error::GitDirTryOldForm(git_dir_try_old_form::Error::
     //                InvalidGitDirFileTarget { .. }))`. Its sole `#[from]` parent,
     //                `status::index_worktree::submodule_status::Error::SubmoduleStatus`
-    //                (`gix/src/status/index_worktree.rs:242`), has no other erased member.
+    //                (`gix/src/status/index_worktree.rs`), has no other erased member.
     /// The error returned by [Submodule::status()].
     #[derive(Debug, thiserror::Error)]
     #[expect(missing_docs)]

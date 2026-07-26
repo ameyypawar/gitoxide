@@ -58,7 +58,7 @@ pub mod set_value {
     // TODO(review): no structural blocker found. No `#[from]` parent embeds this type anywhere in
     //                `gix/src`; it isn't generic; it has no foreign-trait impl. Its `SubSectionRequired`
     //                and `SubSectionForbidden` variants are only ever constructed, at
-    //                `gix/src/config/snapshot/access.rs:124` and `:147`, never matched by a caller, and
+    //                `gix/src/config/snapshot/access.rs`, never matched by a caller, and
     //                a search of `gix/tests`, `gitoxide-core`, `src` and `examples` for
     //                `set_value::Error` found nothing. Its `Validate` variant embeds
     //                `config::tree::key::validate::Error` (also concrete, also not erased), so this
@@ -83,7 +83,7 @@ pub mod set_value {
 //                (`UnsupportedRepositoryFormatVersion { version: 2 }`), and `gix/tests/gix/id.rs:47`
 //                (`CoreAbbrev(_)`). Separately, one parent already has an erased slot filled and
 //                would gain a second if this type were erased too: `clone::fetch::Error::ApplyConfig`
-//                (`gix/src/clone/fetch/mod.rs:28`, erased slot `ParseConfig` at `:26`).
+//                (`gix/src/clone/fetch/mod.rs`, erased slot `ParseConfig`).
 /// The error returned when failing to initialize the repository configuration.
 ///
 /// This configuration is on the critical path when opening a repository.
