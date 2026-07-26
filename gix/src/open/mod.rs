@@ -40,6 +40,13 @@ pub struct Options {
     pub(crate) current_dir: Option<PathBuf>,
 }
 
+// TODO(review): kept concrete. Callers match its variants directly: `gix/src/env.rs:113`
+//                (`Error::NotARepository { .. } | Error::Config(_)`),
+//                `gix/src/submodule/mod.rs:348` (`Error::NotARepository { .. }`), and
+//                `gix/tests/gix/repository/open.rs:435` and `:502`, the former reading the `path`
+//                field. Separately, `clone::fetch::Error::ReopenWithObjectHash`
+//                (`gix/src/clone/fetch/mod.rs:75`, `cfg(feature = "sha256")`) already has an erased
+//                slot via `ParseConfig` (`:26`), so this type is doubly blocked from erasure there.
 /// The error returned by [`crate::open()`].
 #[derive(Debug, thiserror::Error)]
 #[expect(missing_docs)]

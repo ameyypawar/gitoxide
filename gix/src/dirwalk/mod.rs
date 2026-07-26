@@ -38,6 +38,12 @@ pub struct Iter {
     out: Option<iter::Outcome>,
 }
 
+// TODO(review): no structural blocker found. Its only `#[from]` parent, `dirwalk::iter::Error::
+//                Dirwalk` (`gix/src/dirwalk/iter.rs:53`, `cfg(not(feature = "parallel"))`), has no
+//                other erased member. It isn't generic and has no foreign-trait impl. `MissingWorkDir`
+//                and `Walk(..)` are only ever constructed, at `gix/src/repository/dirwalk.rs:43` and
+//                `gix/src/dirwalk/iter.rs:84`, and a search of `gix/tests`, `gitoxide-core`, `src` and
+//                `examples` found no caller matching any of its variants.
 /// The error returned by [dirwalk()](crate::Repository::dirwalk()).
 #[derive(Debug, thiserror::Error)]
 #[expect(missing_docs)]
