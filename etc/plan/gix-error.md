@@ -41,7 +41,7 @@ Workspace scan basis:
 - `thiserror::Error` mentions under `src/**/*.rs`
 - 68 top-level workspace member crates (the 70 entries in root `Cargo.toml`'s `members`, minus the two nested harness crates `tests/tools` and `tests/it`)
 
-Result on 2026-07-27, at `7dc44caf7`:
+Result on 2026-07-27, at `5bfea5f00`:
 
 - 67 crates are done
 - 1 crate is still pending: `gix` — 42 `thiserror::Error` derives across 27 files, every one carrying a `TODO(review)` note explaining why it stays concrete (see "Migration Rules")
@@ -62,7 +62,7 @@ Result on 2026-07-27, at `7dc44caf7`:
 
 **Decision, acted on 2026-07-22:** the maintainer overruled the original "erase to `Exn` everywhere" approach, in review feedback on [GitoxideLabs/gitoxide#2716](https://github.com/GitoxideLabs/gitoxide/pull/2716) — summarized: in the plumbing crates, keep the original expanded, hand-implemented error types for now instead of bringing in `gix-error::Exn`, and focus the erasure effort on `gix` itself and its usage of `gix::Error` with direct error forwarding.
 
-Acting on that, `gix-fs`, `gix-attributes`, `gix-pathspec`, `gix-lock`, `gix-shallow`, `gix-prompt`, `gix-url` and `gix-path` had their `Exn` conversions reverted back to hand-written error types (commit `8047ca58b`, 2026-07-22). The migration is now two-tier:
+Acting on that, `gix-fs`, `gix-attributes`, `gix-pathspec`, `gix-lock`, `gix-shallow`, `gix-prompt`, `gix-url` and `gix-path` had their `Exn` conversions reverted back to hand-written error types (commit `ea8bacd48`, 2026-07-22). The migration is now two-tier:
 
 - **Plumbing crates** — drop `thiserror`, keep concrete enums with hand-written `Display`/`Error` impls. No `gix-error` dependency at all.
 - **The `gix` boundary** — erase to `pub type Error = gix_error::Error;` where callers don't need to match variants. `Exn` itself is not rare in `gix` — it appears 33 times across 7 files (`lib.rs`, `repository/reference.rs`, `config/tree/keys.rs`, `revision/spec/parse/mod.rs`, and `revision/spec/parse/delegate/{mod,navigate,revision}.rs`), with the revision-spec delegate layer alone holding roughly 14 function signatures returning `Result<_, Exn>` — core parsing plumbing, not config/test downcasting.
@@ -85,7 +85,7 @@ All 42 types still concrete in `gix` (2026-07-27) fall into exactly one of four 
 
 ### The double-wrap trap
 
-`.map_err(gix_error::Error::from_error)?` (equally `.or_raise(...)` / `.ok_or_raise(...)`) applied to a callee that *already* returns `gix_error::Error` nests one erased error inside another. It compiles and passes the full test suite — the compiler can't see it structurally, and tests don't catch it either, since the nested error still renders and downcasts fine one level down. Eight such sites are recorded fixed on this branch, in commit `7dc44caf7` (`status::iter`; three in `repository::merge`; `repository::blame`; `commit`; `pathspec`; `filter`) — three of them inside `gix/src/repository/merge.rs`, which a bare `cargo check -p gix` does not compile at all, since `merge` is not a default feature (verified: absent from `default`, `basic`, `extras` and `comfort`; only pulled in by the non-default `need-more-recent-msrv` bundle). The campaign-wide count may be higher; eight is what this branch evidences.
+`.map_err(gix_error::Error::from_error)?` (equally `.or_raise(...)` / `.ok_or_raise(...)`) applied to a callee that *already* returns `gix_error::Error` nests one erased error inside another. It compiles and passes the full test suite — the compiler can't see it structurally, and tests don't catch it either, since the nested error still renders and downcasts fine one level down. Eight such sites are recorded fixed on this branch, in commit `8560cf767` (`status::iter`; three in `repository::merge`; `repository::blame`; `commit`; `pathspec`; `filter`) — three of them inside `gix/src/repository/merge.rs`, which a bare `cargo check -p gix` does not compile at all, since `merge` is not a default feature (verified: absent from `default`, `basic`, `extras` and `comfort`; only pulled in by the non-default `need-more-recent-msrv` bundle). The campaign-wide count may be higher; eight is what this branch evidences.
 
 Detection method: for each `from_error` / `or_raise` / `ok_or_raise` call site, resolve the callee's return type through its alias chain and check whether it's already `gix_error::Error`. A plain grep won't find this — the call site reads identically whether the callee's error is concrete or already erased. Watch the feature-gating blind spot specifically: any module behind a non-default feature is invisible to a bare `cargo check -p gix` — but not to `cargo check --workspace`, since `gitoxide-core` depends on `gix` non-optionally with `features = ["merge", ...]` (`gitoxide-core/Cargo.toml:52`), so workspace-wide checks and tests compile it via feature unification.
 
@@ -204,8 +204,8 @@ Detection method: for each `from_error` / `or_raise` / `ok_or_raise` call site, 
 - [ ] No `src/**/*.rs` file in this workspace mentions `thiserror::Error`.
   Still open: 42 derives across 27 files in `gix/src`.
 - [ ] `cargo nextest run --workspace` no longer excludes `gix-error`.
-  Still open: three `--exclude gix-error` invocations remain in `.github/workflows/ci.yml` as of `7dc44caf7`.
+  Still open: three `--exclude gix-error` invocations remain in `.github/workflows/ci.yml` as of `5bfea5f00`.
 - [x] The `gix` boundary still returns `gix_error::Error` where type erasure is desired.
-  103 `pub type Error = gix_error::Error;` aliases in `gix/src` at this commit.
+  101 `pub type Error = gix_error::Error;` aliases in `gix/src` at this commit.
 - [x] Validation-heavy crates still expose typed validation failures where callers need them.
   Holds under the two-tier strategy: plumbing crates (e.g. `gix-validate`) keep their own typed concrete errors; crates that do adopt `gix-error` use `gix_error::ValidationError` for validation-only paths.
