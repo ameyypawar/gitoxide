@@ -25,7 +25,7 @@ Finish the migration from `thiserror`-based error enums to `gix-error` / `Exn`, 
 - [ ] Make `cargo nextest run --workspace` complete without `--exclude gix-error`.
   Evidence: `.github/workflows/ci.yml` still excludes `gix-error`, in three places (`ci.yml:304,364,450`). The adjacent comment claims `gix-error` "is tested individually," but no dedicated job for it was found in any `.github/workflows/*.yml` file at this commit — worth confirming with Byron whether the exclusion is a migration artifact or a deliberate, permanent split.
 - [ ] Replace `thiserror` with `gix-error` everywhere.
-  Evidence: no longer the actual target. Only `gix` still depends on `thiserror` (42 `thiserror::Error` derives across 27 files); every other crate that dropped `thiserror` moved to hand-written concrete `Display`/`Error` impls, not to `gix-error`. See "Migration Rules" for the two-tier strategy this reflects.
+  Evidence: no longer the actual target. Only `gix` still depends on `thiserror` (42 `thiserror::Error` derives across 27 files); of the other crates, 16 depend on `gix-error` (`gix-date` most completely — its entire public error is `pub use gix_error::ValidationError as Error;`, `gix-date/src/lib.rs:36`), while the plumbing crates covered by the maintainer's revert kept hand-written concrete `Display`/`Error` impls with no `gix-error` dependency at all. See "Migration Rules" for the two-tier strategy this reflects.
 - [x] Keep `NotARepository` distinct from generic open failures.
   Evidence: `gix::open::Error::NotARepository` exists (`gix/src/open/mod.rs`) and is constructed in `gix/src/open/repository.rs`.
 - [ ] Use `gix_error::Error` in tests when that simplifies `Exn`-heavy paths.
