@@ -480,7 +480,13 @@ git clone --shared base remote-default-branch
   git update-ref refs/remotes/renamed/default origin/main
   git remote set-head renamed default
 
-  # Branches and tags of the remote map to the same remote-tracking branches, so the first fetch refspec decides.
+  # Remote names may contain slashes, which also nest their remote-tracking branches.
+  git remote add team/origin ../base
+  git update-ref refs/remotes/team/origin/main origin/main
+  git remote set-head team/origin main
+
+  # Branches and tags of the remote map to the same remote-tracking branches,
+  # so `refs/remotes/ambiguous/main` could track `refs/heads/main` or `refs/tags/main`.
   git remote add ambiguous ../base
   git config --add remote.ambiguous.fetch '+refs/tags/*:refs/remotes/ambiguous/*'
   git update-ref refs/remotes/ambiguous/main origin/main

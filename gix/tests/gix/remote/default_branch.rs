@@ -34,15 +34,29 @@ fn maps_the_remote_head_to_the_branch_on_the_remote() -> Result {
         "the fetch refspec maps the remote-tracking branch back to the branch on the remote, even if their names differ"
     );
     assert_eq!(
-        default_branch(&repo, "ambiguous")?.as_deref(),
+        default_branch(&repo, "team/origin")?.as_deref(),
         Some("refs/heads/main"),
-        "like in Git, the first fetch refspec that matches the remote-tracking branch decides"
+        "remote names may contain slashes, which also nest their remote-tracking branches"
     );
     assert_eq!(
         default_branch(&repo, "dangling")?.as_deref(),
         Some("refs/heads/main"),
-        "the remote-tracking branch doesn't have to exist, just like `git symbolic-ref` shows dangling targets"
+        "a `HEAD` whose remote-tracking branch was deleted still maps by name, like `git symbolic-ref` still prints it"
     );
+    Ok(())
+}
+
+#[test]
+fn fails_if_more_than_one_remote_reference_maps_to_the_remote_head_target() -> Result {
+    let repo = remote::repo("remote-default-branch");
+    let err = repo
+        .find_remote("ambiguous")?
+        .default_branch()
+        .expect_err("`refs/heads/main` and `refs/tags/main` both map to `refs/remotes/ambiguous/main`");
+    let message = err.to_string();
+    for ref_name in ["refs/heads/main", "refs/tags/main"] {
+        assert!(message.contains(ref_name), "the error mentions `{ref_name}`: {message}");
+    }
     Ok(())
 }
 

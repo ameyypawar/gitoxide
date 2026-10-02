@@ -1,4 +1,4 @@
-use gix_error::ResultExt;
+use gix_error::{ResultExt, bail};
 use gix_ref::FullName;
 use gix_refspec::{MatchGroup, RefSpec, match_group};
 
@@ -40,11 +40,13 @@ impl<'repo> Remote<'repo> {
     ///
     /// The record is the symbolic reference `refs/remotes/<name>/HEAD`. `git clone` and `git remote set-head`
     /// point it to the remote-tracking branch of the default branch, like `refs/remotes/origin/main`,
-    /// and since Git 2.48, `git fetch` creates it if it's missing. Like in Git, the first fetch refspec
-    /// that matches this remote-tracking branch maps it back to the branch on the remote.
+    /// and since Git 2.48, `git fetch` creates it if it's missing. The fetch refspecs of this remote then
+    /// map this remote-tracking branch back to the branch on the remote, and it's an error if they map
+    /// more than one remote reference to it.
     ///
     /// `None` is returned if this remote has no name, if `refs/remotes/<name>/HEAD` doesn't exist or isn't symbolic,
-    /// or if no fetch refspec maps a remote reference to its target.
+    /// or if no fetch refspec maps a remote reference to its target. Note that clones made with `gix` currently store
+    /// `refs/remotes/<name>/HEAD` as a direct reference, so `None` is returned for them.
     ///
     /// As the remote isn't contacted, it may have changed its default branch since, and the returned branch
     /// may not exist anymore. `git2::Remote::default_branch()`, on the other hand, asks the connected remote
@@ -70,16 +72,25 @@ impl<'repo> Remote<'repo> {
         };
 
         let null_id = self.repo.object_hash().null();
-        let mapping = MatchGroup::from_fetch_specs(self.fetch_specs.iter().map(RefSpec::to_ref))
+        let mut mappings = MatchGroup::from_fetch_specs(self.fetch_specs.iter().map(RefSpec::to_ref))
             .match_rhs(std::iter::once(match_group::Item {
                 full_ref_name: tracking_branch.as_bstr(),
                 target: &null_id,
                 object: None,
             }))
             .mappings
-            .into_iter()
-            .next();
-        let Some(match_group::SourceRef::FullName(remote_branch)) = mapping.map(|mapping| mapping.lhs) else {
+            .into_iter();
+        let Some(mapping) = mappings.next() else {
+            return Ok(None);
+        };
+        if let Some(other_mapping) = mappings.next() {
+            let (first, second) = (&mapping.lhs, &other_mapping.lhs);
+            bail!(gix_error::validation(format!(
+                "Both '{first}' and '{second}' map to '{tracking_branch}', so the default branch is ambiguous",
+                tracking_branch = tracking_branch.as_bstr()
+            )));
+        }
+        let match_group::SourceRef::FullName(remote_branch) = mapping.lhs else {
             return Ok(None);
         };
         FullName::try_from(remote_branch.into_owned())
