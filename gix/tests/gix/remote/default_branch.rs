@@ -1,0 +1,65 @@
+use crate::{Result, remote};
+
+fn default_branch(repo: &gix::Repository, remote_name: &str) -> Result<Option<String>> {
+    Ok(repo
+        .find_remote(remote_name)?
+        .default_branch()?
+        .map(|name| name.as_bstr().to_string()))
+}
+
+#[test]
+fn maps_the_remote_head_to_the_branch_on_the_remote() -> Result {
+    let repo = remote::repo("remote-default-branch");
+    let baseline = std::fs::read_to_string(remote::repo_path("remote-default-branch").join("baseline.git"))?;
+    let remote_head_target = baseline
+        .lines()
+        .next()
+        .and_then(|line| line.strip_prefix("ref: "))
+        .and_then(|line| line.strip_suffix("\tHEAD"))
+        .expect("`git ls-remote --symref` shows what the remote `HEAD` points to");
+
+    assert_eq!(
+        default_branch(&repo, "origin")?.as_deref(),
+        Some(remote_head_target),
+        "`git clone` records the branch that the remote `HEAD` points to"
+    );
+    assert_eq!(
+        default_branch(&repo, "other-head")?.as_deref(),
+        Some("refs/heads/a"),
+        "`git remote set-head` changes the record without looking at the remote, whose `HEAD` still points to `main`"
+    );
+    assert_eq!(
+        default_branch(&repo, "renamed")?.as_deref(),
+        Some("refs/heads/main"),
+        "the fetch refspec maps the remote-tracking branch back to the branch on the remote, even if their names differ"
+    );
+    assert_eq!(
+        default_branch(&repo, "ambiguous")?.as_deref(),
+        Some("refs/heads/main"),
+        "like in Git, the first fetch refspec that matches the remote-tracking branch decides"
+    );
+    assert_eq!(
+        default_branch(&repo, "dangling")?.as_deref(),
+        Some("refs/heads/main"),
+        "the remote-tracking branch doesn't have to exist, just like `git symbolic-ref` shows dangling targets"
+    );
+    Ok(())
+}
+
+#[test]
+fn is_unknown_without_a_symbolic_remote_head_that_fetch_refspecs_map() -> Result {
+    let repo = remote::repo("remote-default-branch");
+    for (remote_name, reason) in [
+        ("no-head", "there is no `refs/remotes/no-head/HEAD`"),
+        ("detached", "`refs/remotes/detached/HEAD` isn't a symbolic reference"),
+        ("unmapped", "no fetch refspec maps a remote reference to `refs/remotes/unmapped/main` anymore"),
+    ] {
+        assert_eq!(default_branch(&repo, remote_name)?, None, "{reason}");
+    }
+    assert_eq!(
+        repo.remote_at("https://example.com/repo")?.default_branch()?,
+        None,
+        "remotes without a name can't have remote-tracking branches"
+    );
+    Ok(())
+}
