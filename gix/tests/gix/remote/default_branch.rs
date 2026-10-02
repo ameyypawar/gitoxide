@@ -60,9 +60,10 @@ fn is_unknown_without_a_symbolic_remote_head_that_fetch_refspecs_map() -> Result
         assert_eq!(default_branch(&repo, remote_name)?, None, "{reason}");
     }
 
-    let anonymous = repo
-        .remote_at("https://example.com/repo")?
-        .with_refspecs(Some("+refs/heads/*:refs/remotes/origin/*"), gix::remote::Direction::Fetch)?;
+    let anonymous = repo.remote_at("https://example.com/repo")?.with_refspecs(
+        Some("+refs/heads/*:refs/remotes/origin/*"),
+        gix::remote::Direction::Fetch,
+    )?;
     assert_eq!(
         anonymous.default_branch()?,
         None,
