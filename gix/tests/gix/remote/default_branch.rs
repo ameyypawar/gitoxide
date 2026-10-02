@@ -52,14 +52,30 @@ fn is_unknown_without_a_symbolic_remote_head_that_fetch_refspecs_map() -> Result
     for (remote_name, reason) in [
         ("no-head", "there is no `refs/remotes/no-head/HEAD`"),
         ("detached", "`refs/remotes/detached/HEAD` isn't a symbolic reference"),
-        ("unmapped", "no fetch refspec maps a remote reference to `refs/remotes/unmapped/main` anymore"),
+        (
+            "unmapped",
+            "no fetch refspec maps a remote reference to `refs/remotes/unmapped/main` anymore",
+        ),
     ] {
         assert_eq!(default_branch(&repo, remote_name)?, None, "{reason}");
     }
+
+    let anonymous = repo
+        .remote_at("https://example.com/repo")?
+        .with_refspecs(Some("+refs/heads/*:refs/remotes/origin/*"), gix::remote::Direction::Fetch)?;
     assert_eq!(
-        repo.remote_at("https://example.com/repo")?.default_branch()?,
+        anonymous.default_branch()?,
         None,
-        "remotes without a name can't have remote-tracking branches"
+        "without a name there is no `refs/remotes/<name>/HEAD`, even with the fetch refspecs of `origin`"
     );
+
+    let repo = remote::repo("missing-urls");
+    for remote_name in ["https://fallback.example/repo", "example.com:repo"] {
+        assert_eq!(
+            default_branch(&repo, remote_name)?,
+            None,
+            "`{remote_name}` can't be part of a reference name, so it can't have remote-tracking branches"
+        );
+    }
     Ok(())
 }
